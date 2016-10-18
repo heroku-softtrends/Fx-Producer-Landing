@@ -1,0 +1,229 @@
+<html>
+<head>
+   <link rel="stylesheet" href="js/lib/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="css/site.css" />
+</head>
+<body>
+<div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a href="javascript:void(0);" class="navbar-brand">Heroku</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="/index.html">Marketing Cloud Form Submission Generator</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+<div class="container body-content">
+<div class="container-fluid">
+    <div class="col-md-3">
+	 <div class="mobile-content">
+            <div class="mobile-monitor">
+	<form action="http://cl.s7.exct.net/DEManager.aspx" method="post">
+                    <input type="hidden" name="_clientID" value="7289406" />
+                    <input type="hidden" name="_deExternalKey" value="CF72F688-6852-4E26-827E-90B1941E5C77" />
+                    <input type="hidden" name="_action" value="add" />
+                    <input type="hidden" name="_returnXML" value="0" />
+                    <input type="hidden" name="_successURL" value="http://fx-producer-landing.herokuapp.com" />
+                    <input type="hidden" name="_errorURL" value="http://slashdot.org" />
+					<div class="row">
+                        <img id="imgStatus" src="/images/MCLogo.png" alt="Marketing Cloud">
+                    </div>
+                    <div class="row sc-formfield-label">
+                        <label for="Contact:FirstName">First Name</label>
+                        <input type="text" name="Contact:FirstName" class="form-control" id="firstName" value="Heroku" required />
+                    </div>
+                    <div class="row sc-formfield-label" style="margin-top:4%;">
+                        <label for="Contact:LastName">Last Name</label>
+                        <input type="text" name="Contact:LastName" class="form-control" id="lastName" value="Demo" required />
+                    </div>
+                    <div class="row sc-formfield-label" style="margin-top:4%;">
+                        <label for="Contact:Email">Email ID</label>
+                        <input type="email" name="Contact:Email" class="form-control" id="emailAddress" value="demo@heroku.mx" required />
+                    </div>
+                    <div style="margin-top:6%;">
+					    <div id="lblMessage">&nbsp;</div>
+                        <input id="btnSend" type="submit" value="Send User Submissions" class="btn-custom" />
+                    </div>
+					<div class="sc-formfield-label"><label for="Contact:cookieID__c" hidden="true">Cookie ID</label></div>
+					<div class="sc-formfield-input"><input type="text" name="Contact:cookieID__c" hidden="true" value="29481765"></div>
+					<div class="sc-formfield-label"><label for="Contact:eventSource__c" hidden="true">Event Source</label></div>
+					<div class="sc-formfield-input"><input type="text" name="Contact:eventSource__c" hidden="true" value="LandingPage"></div>
+    </form>
+	</div>
+	</div>
+	</div>
+	<div class="col-md-9">
+        <div class="table-responsive" style="max-height:600px;overflow-y: auto;">
+            <table id="trafficDataTable" class="table">
+                <tr>
+                    <th>
+                        Form Submissions sent to Marketing Cloud (Heroku JB Data Ext.)
+                    </th>
+                    <th id="totalCount" style="text-align: right;font-weight: 100;">
+                        Total Records: 0
+                    </th>
+                </tr>
+            </table>
+        </div>
+    </div>
+	</div>
+	 <hr />
+	 <footer>
+            <p>&copy; 2016 - david@heroku.com</p>
+        </footer>
+	</div>
+    <div id="spinner" style="display:block;"></div>
+    <script src="/js/lib/jquery/dist/jquery.js"></script>
+    <script src="/js/lib/jquery-validation/dist/jquery.validate.js"></script>
+    <script src="/js/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+    <script src="/js/lib/bootstrap/dist/js/bootstrap.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $('#spinner').hide();
+        });
+    </script>
+	<script type="text/javascript">
+	    var urlAction = 'http://cl.s7.exct.net/DEManager.aspx';
+        var btnText, btnBgColor;
+		
+		$.validator.setDefaults({
+            highlight: function (element) {
+                $(element).removeClass("textinput");
+                $(element).addClass("errorHighlight");
+            },
+            unhighlight: function (element) {
+                $(element).removeClass("errorHighlight");
+                $(element).addClass("textinput");
+            }
+        });
+		
+		$(function () {
+            $('#spinner').hide();
+            $('#lblMessage').addClass('default-status-message').html('&nbsp;');
+            bindTrafficDataTable();
+            $('input').on('keyup', function () {
+                $(this).css({ "border": "" });
+            });
+			$('form').on('submit',function(event){
+				event.preventDefault() ;
+				event.stopPropagation();
+			});
+            $('#btnSend').on('click', function (e) {
+                if ($("form")[0].checkValidity()) {
+                    btnText = btnBgColor = undefined;
+                    var Contact;
+                    $('#trafficDataTable').find("tr:gt(0)").remove();
+                    Contact = new usertraffic();
+                    Contact.FirstName = $('#firstName').val();
+                    Contact.LastName = $('#lastName').val();
+                    Contact.Email = $('#emailAddress').val();
+                    startSendingData(Contact);
+					for (var i = 1; i < 10; i++) {
+						setTimeout(function(){
+							Contact = new usertraffic();
+							Contact.FirstName = Math.random().toString(36).substr(17);
+							Contact.LastName = Math.random().toString(36).substr(17);
+							Contact.Email = $('#emailAddress').val().replace('demo', Math.random().toString(36).substr(17));
+							Contact.cookieID = Math.round(Math.random() * 29481765);
+							startSendingData(Contact, i);
+						},3000,i);
+				    }
+                }
+                e.preventDefault();
+            });
+        });
+		
+		function bindTrafficDataTable(newRecord) {
+            if ($) {
+                var tableDataRow, emptyRow;
+                var trafficTable = $('#trafficDataTable');
+                tableDataRow = trafficTable.find("tr:gt(0)");
+                if (newRecord) {
+                    if (tableDataRow.find('td.emptyrow').length > 0)
+                        tableDataRow.find('td.emptyrow').remove();
+                    trafficTable.append("<tr><td colspan='2'><div class='wrapword'>" + JSON.stringify(newRecord) + "</div></td></tr>");
+                    tableDataRow = trafficTable.find("tr:gt(0)");
+                    trafficTable.find('th[id=totalCount]').html('Total Count:' + tableDataRow.length);
+                }
+                if (tableDataRow.length == 0) {
+                    tableDataRow.remove();
+                    trafficTable.append("<tr><td style='text-align:center;' class='emptyrow' colspan='2'>No Record Found</td></tr>");
+                }
+            }
+        }
+		
+		function usertraffic() {
+            var Contact = {};
+            Contact.FirstName = '';
+            Contact.LastName = '';
+            Contact.Email = '';
+            Contact.cookieID = $("input[name='Contact:cookieID__c']").val();
+            Contact.eventSource = $("input[name='Contact:eventSource__c']").val();
+            return Contact;
+        }
+		
+		function startSendingData(Contact, reqCount) {
+            if ($) {
+                bindTrafficDataTable(Contact);
+				$.ajax({
+					method: "POST",
+					data: { 
+						_clientID:$('input[name=_clientID]').val(),
+						_deExternalKey:$('input[name=_deExternalKey]').val(),
+						_action:$('input[name=_action]').val(),
+						_returnXML:$('input[name=_returnXML]').val(),
+						_successURL:$('input[name=_successURL]').val(),
+						_errorURL:$('input[name=_errorURL]').val(),
+						'Contact:FirstName':Contact.FirstName,
+						'Contact:LastName':Contact.LastName,
+						'Contact:Email':Contact.Email,
+						'Contact:cookieID__c':Contact.cookieID,
+						'Contact:eventSource__c':Contact.eventSource
+					},
+					url: urlAction,
+					success: function(response){
+						$('#spinner').hide();
+						if (reqCount == 10) {
+							btnBgColor = "green";
+							btnText = "Completed Successfully";
+						}
+						if (btnText && btnBgColor) {
+							$('#lblMessage').css({
+								'background-color': btnBgColor,
+							}).html(btnText);
+							return;
+						}
+						else {
+							$('#lblMessage').addClass('default-status-message').html('&nbsp;');
+						}
+					},
+					error:function(error){
+						$('#spinner').hide();
+						if (reqCount == 10) {
+							btnBgColor = "green";
+							btnText = "Completed Successfully";
+						}
+						if (btnText && btnBgColor) {
+							$('#lblMessage').css({
+								'background-color': btnBgColor,
+							}).html(btnText);
+							return;
+						}
+						else {
+							$('#lblMessage').addClass('default-status-message').html('&nbsp;');
+						}
+					}
+				});
+            }
+        }
+		</script>
+    </body>
